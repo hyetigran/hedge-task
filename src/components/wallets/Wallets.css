@@ -1,0 +1,9 @@
+.buttonContainer {
+  display: flex;
+  justify-content: space-around;
+}
+
+.cardContainer {
+  width: 300px;
+  margin: 10% auto !important;
+}

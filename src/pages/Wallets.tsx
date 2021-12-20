@@ -1,10 +1,20 @@
-import React from "react";
+import React, { FC } from "react";
+import { Row, Col } from "antd";
+import TransactionHistory from "../components/wallets/TransactionHistory";
+import WalletBalance from "../components/wallets/WalletBalance";
+import WalletList from "../components/wallets/WalletList";
 
-const Wallets = () => {
+const Wallets: FC = () => {
   return (
-    <div>
-      <h1>Wallet page</h1>
-    </div>
+    <Row gutter={[24, 24]}>
+      <Col flex={3} span={12}>
+        <WalletBalance />
+        <WalletList />
+      </Col>
+      <Col flex={2} span={12}>
+        <TransactionHistory />
+      </Col>
+    </Row>
   );
 };
 

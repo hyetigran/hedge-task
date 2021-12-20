@@ -1,10 +1,24 @@
-import React from "react";
+import React, { FC } from "react";
+import { PlusOutlined } from "@ant-design/icons";
+import { Card } from "antd";
 
-const WalletList = () => {
+import "./Wallets.css";
+
+const WalletList: FC = () => {
   return (
-    <div>
-      <h1>WalletList page</h1>
-    </div>
+    <Card
+      title="My Wallets"
+      extra={
+        <div>
+          <PlusOutlined />
+        </div>
+      }
+      className="cardContainer"
+    >
+      <p>Card content</p>
+      <p>Card content</p>
+      <p>Card content</p>
+    </Card>
   );
 };
 

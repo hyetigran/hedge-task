@@ -1,10 +1,24 @@
-import React from "react";
+import React, { FC } from "react";
+import { Card } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+import "./Wallets.css";
 
-const TransactionHistory = () => {
+const TransactionHistory: FC = () => {
   return (
-    <div>
-      <h1>TransactionHistory page</h1>
-    </div>
+    <Card
+      title="Latest Transactions"
+      extra={
+        <div>
+          <ReloadOutlined />
+        </div>
+      }
+      className="cardContainer"
+      style={{ minHeight: "100%" }}
+    >
+      <p>Card content</p>
+      <p>Card content</p>
+      <p>Card content</p>
+    </Card>
   );
 };
 

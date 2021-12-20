@@ -12,7 +12,7 @@ const App: FC = () => {
   return (
     <Router>
       <Layout className="homeContainer">
-        <Sider>
+        <Sider width={300}>
           <div>
             <h1 className="logoTitle">Hedge Task</h1>
           </div>
