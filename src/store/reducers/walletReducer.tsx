@@ -3,6 +3,7 @@ import {
   FETCH_WALLETS_SUCCESS,
   TOGGLE_SELECT_WALLET,
   CREATE_AIRDROP_SUCCESS,
+  CREATE_TRANSACTION_SUCCESS,
   WalletActionTypes,
   Wallets,
 } from "../types/walletTypes";
@@ -26,6 +27,8 @@ export const walletReducer = (
         return wallet;
       });
       return updatedState;
+    case CREATE_TRANSACTION_SUCCESS:
+      return state;
     default:
       return state;
   }

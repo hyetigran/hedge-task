@@ -1,4 +1,4 @@
-import axios from "axios";
+//import axios from "axios";
 import { Action } from "redux";
 import {
   Keypair,
@@ -14,11 +14,13 @@ import {
   FETCH_WALLETS_SUCCESS,
   TOGGLE_SELECT_WALLET,
   CREATE_AIRDROP_SUCCESS,
+  CREATE_TRANSACTION_SUCCESS,
   Wallets,
 } from "../types/walletTypes";
 import { createWallet, readAllWallets } from "../../localDB/utilities";
 import { db, Wallet } from "../../localDB/db";
 
+// CURRENTLY UNUSED
 const VALIDATOR_API_URL = "https://api.devnet.solana.com";
 
 export const thunkCreateWallet =
@@ -143,7 +145,27 @@ const airdropToAccount = (updatedWalletState: Wallets[]) => {
     payload: updatedWalletState,
   };
 };
+
+export const thunkCreateTransaction =
+  (
+    keypair: Keypair,
+    toAddress: string,
+    amount: string
+  ): ThunkAction<void, RootState, unknown, Action<string>> =>
+  async (dispatch, getState) => {
+    try {
+    } catch (error) {
+      console.log(error);
+    }
+  };
 // Local DB functions
+
+const createTransaction = (payload: any) => {
+  return {
+    type: CREATE_TRANSACTION_SUCCESS,
+    payload,
+  };
+};
 
 async function saveWallet(wallet: lWallet): Promise<string> {
   return await db.transaction("rw", db.wallets, async (): Promise<string> => {

@@ -1,5 +1,6 @@
 import React, { FC, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Tooltip } from "antd";
 import { CloudDownloadOutlined } from "@ant-design/icons";
 import {
   selectWalletAction,
@@ -33,7 +34,9 @@ const WalletItem: FC<ActionProps> = ({
       onClick={() => dispatch(selectWalletAction(gid))}
     >
       <p>{walletName}</p>
-      <CloudDownloadOutlined onClick={airdropHandler} />
+      <Tooltip placement="right" title={"Airdrop"}>
+        <CloudDownloadOutlined onClick={airdropHandler} />
+      </Tooltip>
     </div>
   );
 };
