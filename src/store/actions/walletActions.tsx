@@ -7,6 +7,7 @@ import { RootState } from "../index";
 import {
   CREATE_WALLET_SUCCESS,
   FETCH_WALLETS_SUCCESS,
+  TOGGLE_SELECT_WALLET,
   Wallets,
 } from "../types/walletTypes";
 import { createWallet, readAllWallets } from "../../localDB/utilities";
@@ -43,7 +44,6 @@ export const thunkFetchWallets =
   async (dispatch) => {
     try {
       const wallets = await getSavedWallets();
-      console.log("wallets", wallets);
       let keypairedWallets: Wallets[];
       if (wallets.length) {
         // Generate keypair from seed
@@ -52,8 +52,11 @@ export const thunkFetchWallets =
           return {
             ...wallet,
             keypair: Keypair.fromSeed(seed),
+            isSelected: false,
           };
         });
+        // Toggle first wallet as selected
+        keypairedWallets[0].isSelected = true;
         dispatch(fetchWallets(keypairedWallets));
       } else {
         dispatch(thunkCreateWallet("First Wallet"));
@@ -67,6 +70,13 @@ const fetchWallets = (wallets: Wallets[]) => {
   return {
     type: FETCH_WALLETS_SUCCESS,
     payload: wallets,
+  };
+};
+
+export const selectWalletAction = (gid: string) => {
+  return {
+    type: TOGGLE_SELECT_WALLET,
+    payload: gid,
   };
 };
 

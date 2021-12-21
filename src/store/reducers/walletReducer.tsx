@@ -1,6 +1,7 @@
 import {
   CREATE_WALLET_SUCCESS,
   FETCH_WALLETS_SUCCESS,
+  TOGGLE_SELECT_WALLET,
   WalletActionTypes,
   Wallets,
 } from "../types/walletTypes";
@@ -16,6 +17,12 @@ export const walletReducer = (
       return [...state, action.payload];
     case FETCH_WALLETS_SUCCESS:
       return action.payload;
+    case TOGGLE_SELECT_WALLET:
+      const updatedState = state.map((wallet) => {
+        wallet.isSelected = wallet.gid === action.payload;
+        return wallet;
+      });
+      return updatedState;
     default:
       return state;
   }

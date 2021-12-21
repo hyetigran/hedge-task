@@ -9,12 +9,14 @@ import {
   thunkFetchWallets,
 } from "../../store/actions/walletActions";
 import { RootState } from "../../store";
+import WalletItem from "./WalletItem";
 
 const WalletList: FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [walletName, setWalletName] = useState("");
 
   const wallets = useSelector((state: RootState) => state.wallets);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -54,8 +56,16 @@ const WalletList: FC = () => {
         className="cardContainer"
       >
         {wallets &&
-          wallets.map((wallet) => {
-            return <p key={wallet.gid}>{wallet.walletName}</p>;
+          wallets.map(({ gid, keypair, balance, walletName, isSelected }) => {
+            return (
+              <WalletItem
+                key={gid}
+                gid={gid!}
+                balance={balance}
+                walletName={walletName}
+                isSelected={isSelected}
+              />
+            );
           })}
       </Card>
       <Modal
