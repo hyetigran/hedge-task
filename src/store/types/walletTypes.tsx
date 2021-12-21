@@ -1,7 +1,12 @@
 export const CREATE_WALLET_SUCCESS = "CREATE_WALLET_SUCCESS";
+export const FETCH_WALLETS_SUCCESS = "FETCH_WALLETS_SUCCESS";
 
 export interface Wallets {
-  id: string;
+  gid?: string;
+  seed: Uint8Array;
+  balance: number;
+  walletName: string;
+  keypair: any;
 }
 
 interface createWalletAction {
@@ -9,4 +14,9 @@ interface createWalletAction {
   payload: Wallets;
 }
 
-export type WalletActionTypes = createWalletAction;
+interface fetchWalletsAction {
+  type: typeof FETCH_WALLETS_SUCCESS;
+  payload: Wallets[];
+}
+
+export type WalletActionTypes = createWalletAction | fetchWalletsAction;

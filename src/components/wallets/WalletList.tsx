@@ -1,15 +1,29 @@
-import React, { FC, useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { FC, useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { PlusOutlined } from "@ant-design/icons";
 import { Modal, Card, Input } from "antd";
 
 import "./Wallets.css";
-import { thunkCreateWallet } from "../../store/actions/walletActions";
+import {
+  thunkCreateWallet,
+  thunkFetchWallets,
+} from "../../store/actions/walletActions";
+import { RootState } from "../../store";
 
 const WalletList: FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [walletName, setWalletName] = useState("");
+
+  const wallets = useSelector((state: RootState) => state.wallets);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    initialLoad();
+  }, []);
+
+  const initialLoad = () => {
+    dispatch(thunkFetchWallets());
+  };
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -17,7 +31,7 @@ const WalletList: FC = () => {
 
   const handleOk = () => {
     setIsModalVisible(false);
-    dispatch(thunkCreateWallet());
+    dispatch(thunkCreateWallet(walletName));
   };
 
   const handleCancel = () => {
@@ -39,9 +53,10 @@ const WalletList: FC = () => {
         }
         className="cardContainer"
       >
-        <p>Card content</p>
-        <p>Card content</p>
-        <p>Card content</p>
+        {wallets &&
+          wallets.map((wallet) => {
+            return <p key={wallet.gid}>{wallet.walletName}</p>;
+          })}
       </Card>
       <Modal
         title="Create Wallet"

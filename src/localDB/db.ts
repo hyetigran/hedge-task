@@ -32,10 +32,10 @@ class AppDatabase extends Dexie {
     var db = this;
 
     db.version(1).stores({
-      wallets: "++gid, walletName, balance, seed",
+      wallets: "&gid, walletName, balance, seed",
     });
 
-    db.wallets = db.table("wallet");
+    db.wallets = db.table("wallets");
   }
 }
 

@@ -1,6 +1,11 @@
-import { CREATE_WALLET_SUCCESS, WalletActionTypes } from "../types/walletTypes";
+import {
+  CREATE_WALLET_SUCCESS,
+  FETCH_WALLETS_SUCCESS,
+  WalletActionTypes,
+  Wallets,
+} from "../types/walletTypes";
 
-const initialState: any = [];
+const initialState: Wallets[] = [];
 
 export const walletReducer = (
   state = initialState,
@@ -8,7 +13,9 @@ export const walletReducer = (
 ) => {
   switch (action.type) {
     case CREATE_WALLET_SUCCESS:
-      return [action.payload];
+      return [...state, action.payload];
+    case FETCH_WALLETS_SUCCESS:
+      return action.payload;
     default:
       return state;
   }
