@@ -1,6 +1,7 @@
 export const CREATE_WALLET_SUCCESS = "CREATE_WALLET_SUCCESS";
 export const FETCH_WALLETS_SUCCESS = "FETCH_WALLETS_SUCCESS";
 export const TOGGLE_SELECT_WALLET = "TOGGLE_SELECT_WALLET";
+export const CREATE_AIRDROP_SUCCESS = "CREATE_AIRDROP_SUCCESS";
 
 export interface Wallets {
   gid?: string;
@@ -26,7 +27,13 @@ interface toggleWalletAction {
   payload: string;
 }
 
+interface createAirdropAction {
+  type: typeof CREATE_AIRDROP_SUCCESS;
+  payload: Wallets[];
+}
+
 export type WalletActionTypes =
   | createWalletAction
   | fetchWalletsAction
-  | toggleWalletAction;
+  | toggleWalletAction
+  | createAirdropAction;

@@ -1,6 +1,11 @@
-// import axios from "axios";
+import axios from "axios";
 import { Action } from "redux";
-import { Keypair } from "@solana/web3.js";
+import {
+  Keypair,
+  Connection,
+  clusterApiUrl,
+  LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
 import { ThunkAction } from "redux-thunk";
 
 import { RootState } from "../index";
@@ -8,10 +13,13 @@ import {
   CREATE_WALLET_SUCCESS,
   FETCH_WALLETS_SUCCESS,
   TOGGLE_SELECT_WALLET,
+  CREATE_AIRDROP_SUCCESS,
   Wallets,
 } from "../types/walletTypes";
 import { createWallet, readAllWallets } from "../../localDB/utilities";
 import { db, Wallet } from "../../localDB/db";
+
+const VALIDATOR_API_URL = "https://api.devnet.solana.com";
 
 export const thunkCreateWallet =
   (walletName: string): ThunkAction<void, RootState, unknown, Action<string>> =>
@@ -44,17 +52,24 @@ export const thunkFetchWallets =
   async (dispatch) => {
     try {
       const wallets = await getSavedWallets();
+
       let keypairedWallets: Wallets[];
       if (wallets.length) {
         // Generate keypair from seed
-        keypairedWallets = wallets.map((wallet) => {
+        keypairedWallets = [];
+
+        for (let i = 0; i < wallets.length; i++) {
+          let wallet = wallets[i];
           let seed = new Uint8Array(wallet.seed).slice(0, 32);
-          return {
+          let keypair = Keypair.fromSeed(seed);
+          const balance = await fetchAccountBalance(keypair);
+          keypairedWallets.push({
             ...wallet,
-            keypair: Keypair.fromSeed(seed),
+            keypair,
             isSelected: false,
-          };
-        });
+            balance,
+          });
+        }
         // Toggle first wallet as selected
         keypairedWallets[0].isSelected = true;
         dispatch(fetchWallets(keypairedWallets));
@@ -65,6 +80,13 @@ export const thunkFetchWallets =
       console.log(error);
     }
   };
+
+const fetchAccountBalance = async (keypair: any) => {
+  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+  const account = await connection.getAccountInfo(keypair.publicKey);
+
+  return account ? account.lamports / 100000000 : 0;
+};
 
 const fetchWallets = (wallets: Wallets[]) => {
   return {
@@ -80,6 +102,47 @@ export const selectWalletAction = (gid: string) => {
   };
 };
 
+export const thunkAirdropToAccount =
+  (gid: string): ThunkAction<void, RootState, unknown, Action<string>> =>
+  async (dispatch, getState) => {
+    try {
+      const { wallets } = getState();
+      const [selectedWallet] = wallets.filter((wallet) => wallet.gid === gid);
+      const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+      const airdropSignature = await connection.requestAirdrop(
+        selectedWallet.keypair.publicKey,
+        LAMPORTS_PER_SOL
+      );
+
+      const result = await connection.confirmTransaction(airdropSignature);
+
+      let account = await connection.getAccountInfo(
+        selectedWallet.keypair.publicKey
+      );
+
+      const balance = account ? account.lamports / 100000000 : 0;
+      const updatedWalletState = wallets.map((wallet) => {
+        if (wallet.gid === gid) {
+          return {
+            ...wallet,
+            balance,
+          };
+        }
+        return wallet;
+      });
+      dispatch(airdropToAccount(updatedWalletState));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+const airdropToAccount = (updatedWalletState: Wallets[]) => {
+  return {
+    type: CREATE_AIRDROP_SUCCESS,
+    payload: updatedWalletState,
+  };
+};
 // Local DB functions
 
 async function saveWallet(wallet: lWallet): Promise<string> {
