@@ -1,0 +1,46 @@
+.buttonContainer {
+  display: flex;
+  justify-content: space-around;
+}
+
+.cardContainer {
+  width: 300px;
+  margin: 10% auto !important;
+}
+
+.walletItem {
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #eff2f5;
+  display: flex;
+  padding: 5% 4%;
+  margin: 5% 0;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.walletItem:hover {
+  border-color: #001528;
+}
+.selectedWalletItem {
+  border: 1px solid #1990ff;
+}
+
+.sendForm {
+  display: flex;
+  justify-content: space-around;
+  min-height: 100px;
+  flex-direction: column;
+}
+
+.transactionItem {
+  border: 1px solid #eff2f5;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 5% 4%;
+  margin: 5% 0;
+}
+.topTransactionDetail {
+  display: flex;
+  justify-content: space-between;
+}
