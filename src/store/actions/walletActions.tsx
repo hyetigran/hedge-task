@@ -24,8 +24,14 @@ import {
   Wallets,
   Transactions,
 } from "../types/walletTypes";
-import { createWallet, readAllWallets } from "../../localDB/utilities";
-import { db, Wallet } from "../../localDB/db";
+import {
+  createMint,
+  createWallet,
+  loadWalletMints,
+  readAllWallets,
+  readWallet,
+} from "../../localDB/utilities";
+import { db, Mint, Wallet } from "../../localDB/db";
 
 // CURRENTLY UNUSED
 const VALIDATOR_API_URL = "https://api.devnet.solana.com";
@@ -38,6 +44,11 @@ interface lWallet {
   balance: number;
 }
 
+interface lMint {
+  mint: string;
+  owner: string;
+  address: string;
+}
 export const thunkCreateWallet =
   (walletName: string): ThunkAction<void, RootState, unknown, Action<string>> =>
   async (dispatch) => {
@@ -213,7 +224,7 @@ export const thunkFetchTransaction =
         keypair.publicKey
       );
       const signatureArray = signatures.map((sig) => sig.signature);
-
+      console.log("PUB KEY", keypair.publicKey.toBase58());
       let transactions: Transactions[] = [];
       for (let i = 0; i < signatureArray.length; i++) {
         const transaction = await connection.getTransaction(signatureArray[i]);
@@ -300,14 +311,30 @@ export const thunkCreateMint =
         selectedWallet.keypair.publicKey
       );
       console.log("fromTokenAccount", fromTokenAccount);
+      console.log(
+        "address",
+        new PublicKey(fromTokenAccount.address).toBase58()
+      );
+      console.log("mint", new PublicKey(fromTokenAccount.mint).toBase58());
+      console.log("owner", new PublicKey(fromTokenAccount.owner).toBase58());
 
       // Minting 1 new token to the "fromTokenAccount" account we just returned/created
       const result = await mint.mintTo(
         fromTokenAccount.address,
         selectedWallet.keypair.publicKey,
         [],
-        1000000000
+        5000000000
       );
+      console.log("MINT RESULT", result);
+      const newMint = {
+        mint: new PublicKey(fromTokenAccount.mint).toBase58(),
+        owner: new PublicKey(fromTokenAccount.owner).toBase58(),
+        address: new PublicKey(fromTokenAccount.address).toBase58(),
+      };
+      if (!selectedWallet.gid) {
+        throw new Error("Wallet gid missing");
+      }
+      await saveMint(selectedWallet.gid, newMint);
 
       console.log("MINT TO R", result);
     } catch (error) {
@@ -321,14 +348,30 @@ export const thunkFetchTokens =
     try {
       const { wallets } = getState();
       const [selectedWallet] = wallets.filter((wallet) => wallet.isSelected);
-
+      const savedMints = await getSavedMints(selectedWallet.gid!);
+      console.log("SV MINTS", savedMints);
       const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+      //   const tokenList = [];
+      //   for (let i = 0; i < savedMints.length; i++) {
+      //     const token = await Token.getAssociatedTokenAddress(
+      //       selectedWallet.keypair.publicKey,
+      //       selectedWallet.keypair.publicKey,
+      //       new PublicKey(savedMints[i].mint),
+      //       new PublicKey(savedMints[i].owner)
+      //     );
+      //     tokenList.push(token);
+      //     console.log("TOKEN", token);
+      //   }
+      const tokenSupply = await connection.getTokenSupply(
+        new PublicKey(savedMints[0].mint)
+      );
 
-      //   const token = await Token.getAssociatedTokenAddress(selectedWallet.keypair.publicKey)
+      console.log("TOKEN", tokenSupply);
+
       const tokenAccounts = await connection.getProgramAccounts(
         selectedWallet.keypair.publicKey
       );
-      console.log("TOKEN ACCOUNTS", tokenAccounts);
+      console.log("TOKEN", tokenAccounts);
     } catch (error) {
       console.log(error);
     }
@@ -343,8 +386,26 @@ async function saveWallet(wallet: lWallet): Promise<string> {
     return await createWallet(db, newWallet);
   });
 }
+
+async function saveMint(id: string, mintObject: lMint) {
+  await db.transaction("rw", db.wallets, db.mints, async () => {
+    const { mint, owner, address } = mintObject;
+    await createMint(db, new Mint(id, mint, owner, address));
+  });
+}
 async function getSavedWallets(): Promise<Wallet[]> {
   return await db.transaction("rw", db.wallets, async (): Promise<Wallet[]> => {
     return await readAllWallets(db);
   });
+}
+
+async function getSavedMints(walletId: string): Promise<Mint[]> {
+  return await db.transaction(
+    "rw",
+    db.wallets,
+    db.mints,
+    async (): Promise<Mint[]> => {
+      return await loadWalletMints(walletId, db);
+    }
+  );
 }

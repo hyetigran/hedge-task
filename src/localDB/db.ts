@@ -31,7 +31,13 @@ export class Wallet extends AbstractEntity {
 }
 
 export class Mint extends AbstractEntity {
-  constructor(public walletId: string, public mint: string, gid?: string) {
+  constructor(
+    public walletId: string,
+    public mint: string,
+    public owner: string,
+    public address: string,
+    gid?: string
+  ) {
     super(gid);
   }
 }
@@ -46,7 +52,7 @@ class AppDatabase extends Dexie {
 
     db.version(1).stores({
       wallets: "&gid, walletName, balance, seed",
-      mints: "&gid, walletId, mint",
+      mints: "&gid, walletId, mint, owner, address",
     });
 
     db.wallets = db.table("wallets");

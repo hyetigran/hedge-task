@@ -37,7 +37,9 @@ const WalletDropdown: FC<ActionProps> = ({ wallets }) => {
       <Col span={12} offset={6}>
         <Dropdown overlay={menu}>
           <Button block>
-            {`${selectedWallet.walletName} ${selectedWallet.balance} SOL`}{" "}
+            {selectedWallet
+              ? `${selectedWallet.walletName} ${selectedWallet.balance} SOL`
+              : "Select Wallet"}
             <DownOutlined />
           </Button>
         </Dropdown>

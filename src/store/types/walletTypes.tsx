@@ -15,6 +15,7 @@ export interface Wallets {
   keypair: Keypair;
   isSelected: boolean;
   transactions?: Transactions[];
+  mints?: Mint[];
 }
 
 export interface Transactions {
@@ -22,6 +23,10 @@ export interface Transactions {
   slot: number;
   amount: number;
   fee: number;
+}
+
+export interface Mint {
+  mint: string;
 }
 
 interface createWalletAction {

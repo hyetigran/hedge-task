@@ -34,9 +34,6 @@ const TabContainer: FC<ActionProps> = () => {
             key="1"
             style={{ background: "white", padding: "10%" }}
           >
-            <p>Content of Tab Pane 1</p>
-            <p>Content of Tab Pane 1</p>
-            <p>Content of Tab Pane 1</p>
             <Button block type="primary" onClick={handleCreateMint}>
               Mint
             </Button>
