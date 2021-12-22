@@ -1,52 +1,62 @@
-import React, { FC, useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Tabs, Row, Col, Button } from "antd";
+import React, { FC, useState } from "react";
+import { useDispatch } from "react-redux";
+import { Tabs, Row, Col, Button, Input } from "antd";
 
-import {
-  thunkCreateMint,
-  thunkFetchTokens,
-} from "../../store/actions/walletActions";
+import { thunkCreateAndSendMint } from "../../store/actions/walletActions";
 
 import "./Mint.css";
 
 const { TabPane } = Tabs;
 
-interface ActionProps {}
+const TabContainer: FC = () => {
+  const [toAddress, setToAddress] = useState("");
 
-const TabContainer: FC<ActionProps> = () => {
   const dispatch = useDispatch();
 
   const handleCreateMint = () => {
-    dispatch(thunkCreateMint());
+    dispatch(thunkCreateAndSendMint(toAddress));
   };
-  const handleTokenFetch = (key: string) => {
-    if (key === "2") {
-      dispatch(thunkFetchTokens());
-    }
+
+  const addressHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    // NO INPUT VALIDATION
+    setToAddress(e.currentTarget.value);
   };
 
   return (
     <Row className="mintTabContainer">
       <Col span={12} offset={6}>
-        <Tabs type="card" onTabClick={handleTokenFetch}>
+        <Tabs type="card">
           <TabPane
             tab="Create Token"
             key="1"
             style={{ background: "white", padding: "10%" }}
           >
+            <Input
+              placeholder="Send to address"
+              value={toAddress}
+              onChange={addressHandler}
+              style={{ margin: "10px 0" }}
+            />
             <Button block type="primary" onClick={handleCreateMint}>
-              Mint
+              Mint and Send
             </Button>
           </TabPane>
-          <TabPane
-            tab="View Tokens"
-            key="2"
+          {/* <TabPane
+            tab="Send Tokens"
+            key="3"
             style={{ background: "white", padding: "10%" }}
           >
-            <p>Content of Tab Pane 2</p>
-            <p>Content of Tab Pane 2</p>
-            <p>Content of Tab Pane 2</p>
-          </TabPane>
+            <Input
+              placeholder="Send to address"
+              value={toAddress}
+              onChange={addressHandler}
+              style={{ margin: "10px 0" }}
+            />
+
+            <Button onClick={handleSendToken} type="primary" block>
+              Send
+            </Button>
+          </TabPane> */}
         </Tabs>
       </Col>
     </Row>

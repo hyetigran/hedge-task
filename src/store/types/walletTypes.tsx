@@ -6,6 +6,7 @@ export const TOGGLE_SELECT_WALLET = "TOGGLE_SELECT_WALLET";
 export const CREATE_AIRDROP_SUCCESS = "CREATE_AIRDROP_SUCCESS";
 export const CREATE_TRANSACTION_SUCCESS = "CREATE_TRANSACTION_SUCCESS";
 export const FETCH_TRANSACTION_SUCCESS = "FETCH_TRANSACTION_SUCCESS";
+export const CREATE_MINT_SUCCESS = "CREATE_MINT_SUCCESS";
 
 export interface Wallets {
   gid?: string;
@@ -16,6 +17,7 @@ export interface Wallets {
   isSelected: boolean;
   transactions?: Transactions[];
   mints?: Mint[];
+  mintObject?: any;
 }
 
 export interface Transactions {
@@ -23,6 +25,7 @@ export interface Transactions {
   slot: number;
   amount: number;
   fee: number;
+  isToken: boolean;
 }
 
 export interface Mint {
@@ -59,10 +62,16 @@ interface fetchTransactionAction {
   payload: Wallets[];
 }
 
+interface createMintAction {
+  type: typeof CREATE_MINT_SUCCESS;
+  payload: Wallets[];
+}
+
 export type WalletActionTypes =
   | createWalletAction
   | fetchWalletsAction
   | toggleWalletAction
   | createAirdropAction
   | createTransactionAction
-  | fetchTransactionAction;
+  | fetchTransactionAction
+  | createMintAction;

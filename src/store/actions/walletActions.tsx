@@ -21,6 +21,7 @@ import {
   CREATE_AIRDROP_SUCCESS,
   CREATE_TRANSACTION_SUCCESS,
   FETCH_TRANSACTION_SUCCESS,
+  CREATE_MINT_SUCCESS,
   Wallets,
   Transactions,
 } from "../types/walletTypes";
@@ -113,7 +114,6 @@ const fetchAccountBalance = async (keypair: any) => {
   const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
   // use getBalance method instead
   const account = await connection.getAccountInfo(keypair.publicKey);
-  console.log("ACCCOUNT", account);
   return account ? account.lamports / 100000000 : 0;
 };
 
@@ -197,14 +197,24 @@ export const thunkCreateTransaction =
     const result = await sendAndConfirmTransaction(connection, transaction, [
       keypair,
     ]);
-    console.log("result", result);
+    const { wallets } = getState();
+    const updatedWallets = wallets.map((wallet) => {
+      if (wallet.isSelected) {
+        return {
+          ...wallet,
+          balance: wallet.balance - parseInt(amount),
+        };
+      }
+      return wallet;
+    });
+    dispatch(createTransaction(updatedWallets));
     try {
     } catch (error) {
       console.log(error);
     }
   };
 
-const createTransaction = (payload: any) => {
+const createTransaction = (payload: Wallets[]) => {
   return {
     type: CREATE_TRANSACTION_SUCCESS,
     payload,
@@ -225,6 +235,7 @@ export const thunkFetchTransaction =
       );
       const signatureArray = signatures.map((sig) => sig.signature);
       console.log("PUB KEY", keypair.publicKey.toBase58());
+      console.log("SIG ARR", signatureArray);
       let transactions: Transactions[] = [];
       for (let i = 0; i < signatureArray.length; i++) {
         const transaction = await connection.getTransaction(signatureArray[i]);
@@ -247,7 +258,7 @@ export const thunkFetchTransaction =
         const {
           blockTime,
           slot,
-          meta: { fee, postBalances, preBalances },
+          meta: { fee, postBalances, preBalances, postTokenBalances },
         } = transaction;
         const feePaid = accountKeyIndex === 0 ? fee : 0;
         const amount =
@@ -260,6 +271,7 @@ export const thunkFetchTransaction =
           fee,
           slot,
           amount,
+          isToken: postTokenBalances && postTokenBalances.length ? true : false,
         };
         transactions.push(newTransaction);
       }
@@ -287,8 +299,8 @@ const fetchTransaction = (payload: Wallets[]) => {
   };
 };
 
-export const thunkCreateMint =
-  (): ThunkAction<void, RootState, unknown, Action<string>> =>
+export const thunkCreateAndSendMint =
+  (toAddress: string): ThunkAction<void, RootState, unknown, Action<string>> =>
   async (dispatch, getState) => {
     try {
       const { wallets } = getState();
@@ -301,31 +313,49 @@ export const thunkCreateMint =
         selectedWallet.keypair,
         selectedWallet.keypair.publicKey,
         null,
-        100,
+        2,
         TOKEN_PROGRAM_ID
       );
-      console.log("MINT", mint);
 
       // Get the token account of the fromWallet Solana address, if it does not exist, create it
       const fromTokenAccount = await mint.getOrCreateAssociatedAccountInfo(
         selectedWallet.keypair.publicKey
       );
-      console.log("fromTokenAccount", fromTokenAccount);
-      console.log(
-        "address",
-        new PublicKey(fromTokenAccount.address).toBase58()
+
+      //get the token account of the toWallet Solana address, if it does not exist, create it
+      const toTokenAccount = await mint.getOrCreateAssociatedAccountInfo(
+        new PublicKey(toAddress)
       );
-      console.log("mint", new PublicKey(fromTokenAccount.mint).toBase58());
-      console.log("owner", new PublicKey(fromTokenAccount.owner).toBase58());
 
       // Minting 1 new token to the "fromTokenAccount" account we just returned/created
-      const result = await mint.mintTo(
+      await mint.mintTo(
         fromTokenAccount.address,
         selectedWallet.keypair.publicKey,
         [],
-        5000000000
+        1000000000
       );
-      console.log("MINT RESULT", result);
+
+      // Add token transfer instructions to transaction
+      const transaction = new Transaction().add(
+        Token.createTransferInstruction(
+          TOKEN_PROGRAM_ID,
+          fromTokenAccount.address,
+          toTokenAccount.address,
+          selectedWallet.keypair.publicKey,
+          [],
+          1
+        )
+      );
+
+      // Sign transaction, broadcast, and confirm
+      const signature = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [selectedWallet.keypair],
+        { commitment: "confirmed" }
+      );
+
+      // Persist in local DB
       const newMint = {
         mint: new PublicKey(fromTokenAccount.mint).toBase58(),
         owner: new PublicKey(fromTokenAccount.owner).toBase58(),
@@ -335,13 +365,29 @@ export const thunkCreateMint =
         throw new Error("Wallet gid missing");
       }
       await saveMint(selectedWallet.gid, newMint);
-
-      console.log("MINT TO R", result);
+      const updatedWallets = wallets.map((wallet) => {
+        if (wallet.isSelected) {
+          return {
+            ...wallet,
+            mintObject: mint,
+          };
+        }
+        return wallet;
+      });
+      dispatch(createMintAction(updatedWallets));
     } catch (error) {
       console.log(error);
     }
   };
 
+const createMintAction = (wallets: Wallets[]) => {
+  return {
+    type: CREATE_MINT_SUCCESS,
+    payload: wallets,
+  };
+};
+
+// NOT INVOKED
 export const thunkFetchTokens =
   (): ThunkAction<void, RootState, unknown, Action<string>> =>
   async (dispatch, getState) => {
@@ -349,7 +395,7 @@ export const thunkFetchTokens =
       const { wallets } = getState();
       const [selectedWallet] = wallets.filter((wallet) => wallet.isSelected);
       const savedMints = await getSavedMints(selectedWallet.gid!);
-      console.log("SV MINTS", savedMints);
+
       const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
       //   const tokenList = [];
       //   for (let i = 0; i < savedMints.length; i++) {
@@ -366,12 +412,65 @@ export const thunkFetchTokens =
         new PublicKey(savedMints[0].mint)
       );
 
-      console.log("TOKEN", tokenSupply);
-
       const tokenAccounts = await connection.getProgramAccounts(
         selectedWallet.keypair.publicKey
       );
-      console.log("TOKEN", tokenAccounts);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+// NOT INVOKED
+export const thunkSendTokens =
+  (toAddress: string): ThunkAction<void, RootState, unknown, Action<string>> =>
+  async (dispatch, getState) => {
+    try {
+      const { wallets } = getState();
+      const [selectedWallet] = wallets.filter((wallet) => wallet.isSelected);
+
+      const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+      //   const mint = await new Token(
+      //     connection,
+      //     selectedWallet.keypair.publicKey,
+      //     selectedWallet.keypair.publicKey,
+      //     selectedWallet.keypair
+      //   );
+      //   const mint = selectedWallet.mintObject;
+      //   // Get the token account of the fromWallet Solana address, if it does not exist, create it
+      //   const fromTokenAccount = await mint.getOrCreateAssociatedAccountInfo(
+      //     selectedWallet.keypair.publicKey
+      //   );
+      //   console.log("FROM", fromTokenAccount);
+
+      //   //get the token account of the toWallet Solana address, if it does not exist, create it
+      //   const toTokenAccount = await mint.getOrCreateAssociatedAccountInfo(
+      //     new PublicKey(toAddress)
+      //   );
+      //   const accountInfo = await connection.getAccountInfo(
+      //     new PublicKey(toAddress)
+      //   );
+      //   console.log("TO", toTokenAccount);
+      //   console.log("TO2", accountInfo);
+
+      // Add token transfer instructions to transaction
+      const transaction = new Transaction().add(
+        Token.createTransferInstruction(
+          TOKEN_PROGRAM_ID,
+          selectedWallet.keypair.publicKey,
+          new PublicKey(toAddress),
+          selectedWallet.keypair.publicKey,
+          [],
+          1
+        )
+      );
+      // Sign transaction, broadcast, and confirm
+      await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [selectedWallet.keypair],
+        { commitment: "confirmed" }
+      );
     } catch (error) {
       console.log(error);
     }
