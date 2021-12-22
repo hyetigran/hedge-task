@@ -10,11 +10,15 @@ const { TabPane } = Tabs;
 
 const TabContainer: FC = () => {
   const [toAddress, setToAddress] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
-  const handleCreateMint = () => {
-    dispatch(thunkCreateAndSendMint(toAddress));
+  const handleCreateMint = async () => {
+    setLoading(true);
+    setToAddress("");
+    await dispatch(thunkCreateAndSendMint(toAddress));
+    setLoading(false);
   };
 
   const addressHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -37,7 +41,12 @@ const TabContainer: FC = () => {
               onChange={addressHandler}
               style={{ margin: "10px 0" }}
             />
-            <Button block type="primary" onClick={handleCreateMint}>
+            <Button
+              block
+              type="primary"
+              onClick={handleCreateMint}
+              loading={loading}
+            >
               Mint and Send
             </Button>
           </TabPane>
@@ -64,3 +73,6 @@ const TabContainer: FC = () => {
 };
 
 export default TabContainer;
+function useHistory() {
+  throw new Error("Function not implemented.");
+}

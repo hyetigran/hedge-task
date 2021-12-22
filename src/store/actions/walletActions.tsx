@@ -1,4 +1,3 @@
-//import axios from "axios";
 import { Action } from "redux";
 import {
   Keypair,
@@ -30,12 +29,8 @@ import {
   createWallet,
   loadWalletMints,
   readAllWallets,
-  readWallet,
 } from "../../localDB/utilities";
 import { db, Mint, Wallet } from "../../localDB/db";
-
-// CURRENTLY UNUSED
-const VALIDATOR_API_URL = "https://api.devnet.solana.com";
 
 // Interfaces
 
@@ -52,7 +47,7 @@ interface lMint {
 }
 export const thunkCreateWallet =
   (walletName: string): ThunkAction<void, RootState, unknown, Action<string>> =>
-  async (dispatch) => {
+  async (dispatch, getState) => {
     try {
       let keypair = Keypair.generate();
 
@@ -62,14 +57,29 @@ export const thunkCreateWallet =
         seed: keypair.secretKey,
       };
       const result = await saveWallet(newWallet);
-
-      dispatch(createWalletAction({ gid: result, ...newWallet, keypair }));
+      const { wallets } = getState();
+      const updatedWallets = wallets.map((wallet) => {
+        if (wallet.isSelected) {
+          return {
+            ...wallet,
+            isSelected: false,
+          };
+        }
+        return wallet;
+      });
+      updatedWallets.push({
+        gid: result,
+        ...newWallet,
+        keypair,
+        isSelected: true,
+      });
+      dispatch(createWalletAction(updatedWallets));
     } catch (err) {
       console.log(err);
     }
   };
 
-const createWalletAction = (payload: any) => {
+const createWalletAction = (payload: Wallets[]) => {
   return {
     type: CREATE_WALLET_SUCCESS,
     payload,
@@ -234,12 +244,10 @@ export const thunkFetchTransaction =
         keypair.publicKey
       );
       const signatureArray = signatures.map((sig) => sig.signature);
-      console.log("PUB KEY", keypair.publicKey.toBase58());
-      console.log("SIG ARR", signatureArray);
+
       let transactions: Transactions[] = [];
       for (let i = 0; i < signatureArray.length; i++) {
         const transaction = await connection.getTransaction(signatureArray[i]);
-        console.log("TXN", transaction);
         if (!transaction) {
           throw new Error(
             `Transaction is null for signature: ${signatureArray[i]}`

@@ -13,18 +13,17 @@ import {
 const initialState: Wallets[] = [];
 
 export const walletReducer = (
-  state = initialState,
+  state: Wallets[] = initialState,
   action: WalletActionTypes
 ) => {
   switch (action.type) {
-    case CREATE_WALLET_SUCCESS:
-      return [...state, action.payload];
     case TOGGLE_SELECT_WALLET:
       const updatedState = state.map((wallet) => {
         wallet.isSelected = wallet.gid === action.payload;
         return wallet;
       });
       return updatedState;
+    case CREATE_WALLET_SUCCESS:
     case FETCH_WALLETS_SUCCESS:
     case CREATE_AIRDROP_SUCCESS:
     case CREATE_TRANSACTION_SUCCESS:

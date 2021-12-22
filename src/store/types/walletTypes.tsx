@@ -16,8 +16,6 @@ export interface Wallets {
   keypair: Keypair;
   isSelected: boolean;
   transactions?: Transactions[];
-  mints?: Mint[];
-  mintObject?: any;
 }
 
 export interface Transactions {
@@ -34,7 +32,7 @@ export interface Mint {
 
 interface createWalletAction {
   type: typeof CREATE_WALLET_SUCCESS;
-  payload: Wallets;
+  payload: Wallets[];
 }
 
 interface fetchWalletsAction {

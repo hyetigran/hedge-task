@@ -26,7 +26,7 @@ const WalletBalance: FC = () => {
     if (wallet[0]) {
       dispatch(thunkFetchTransaction(wallet[0].keypair, wallet[0].gid!));
     }
-  }, [wallet[0]?.gid]);
+  }, [wallet[0]?.balance]);
 
   const dispatch = useDispatch();
 
