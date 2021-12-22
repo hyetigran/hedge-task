@@ -29,6 +29,14 @@ import { db, Wallet } from "../../localDB/db";
 // CURRENTLY UNUSED
 const VALIDATOR_API_URL = "https://api.devnet.solana.com";
 
+// Interfaces
+
+interface lWallet {
+  walletName: string;
+  seed: Uint8Array;
+  balance: number;
+}
+
 export const thunkCreateWallet =
   (walletName: string): ThunkAction<void, RootState, unknown, Action<string>> =>
   async (dispatch) => {
@@ -91,6 +99,7 @@ export const thunkFetchWallets =
 
 const fetchAccountBalance = async (keypair: any) => {
   const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+  // use getBalance method instead
   const account = await connection.getAccountInfo(keypair.publicKey);
 
   return account ? account.lamports / 100000000 : 0;
@@ -279,12 +288,4 @@ async function getSavedWallets(): Promise<Wallet[]> {
   return await db.transaction("rw", db.wallets, async (): Promise<Wallet[]> => {
     return await readAllWallets(db);
   });
-}
-
-// Interfaces
-
-interface lWallet {
-  walletName: string;
-  seed: Uint8Array;
-  balance: number;
 }
