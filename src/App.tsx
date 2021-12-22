@@ -1,8 +1,9 @@
 import React, { FC } from "react";
 import { Layout, Menu } from "antd";
 import { BankOutlined, WalletOutlined } from "@ant-design/icons";
-import { Link, Routes, Route, BrowserRouter as Router } from "react-router-dom";
+import { Link, Routes, Route } from "react-router-dom";
 
+import { useQuery } from "./hooks/useQuery";
 import Wallets from "./pages/Wallets";
 import Mint from "./pages/Mint";
 import "./App.css";
@@ -10,12 +11,16 @@ import "./App.css";
 const { Sider, Content, Header } = Layout;
 
 const App: FC = () => {
+  let pathname = useQuery();
+
+  const selectedKey = pathname === "/" ? "1" : "2";
+
   return (
-    <Router>
+    <>
       <Layout className="homeContainer">
         <Sider width={300}>
           <Header className="logoTitle">Hedgehog Task</Header>
-          <Menu mode="inline" theme="dark" defaultSelectedKeys={["1"]}>
+          <Menu mode="inline" theme="dark" defaultSelectedKeys={[selectedKey]}>
             <Menu.Item key="1">
               <Link to="/">
                 <WalletOutlined /> Wallets
@@ -35,7 +40,7 @@ const App: FC = () => {
           </Routes>
         </Content>
       </Layout>
-    </Router>
+    </>
   );
 };
 

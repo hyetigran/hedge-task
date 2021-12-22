@@ -19,7 +19,7 @@ const TransactionHistory: FC = () => {
         </div>
       }
       className="cardContainer"
-      style={{ minHeight: "100%", maxHeight: "600px", width: "400px" }}
+      style={{ minHeight: "100%", maxHeight: "650px", width: "400px" }}
       bodyStyle={{
         overflow: "auto",
         maxHeight: "inherit",
