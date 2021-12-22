@@ -10,6 +10,7 @@ import {
   clusterApiUrl,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
+import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { ThunkAction } from "redux-thunk";
 
 import { RootState } from "../index";
@@ -101,7 +102,7 @@ const fetchAccountBalance = async (keypair: any) => {
   const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
   // use getBalance method instead
   const account = await connection.getAccountInfo(keypair.publicKey);
-
+  console.log("ACCCOUNT", account);
   return account ? account.lamports / 100000000 : 0;
 };
 
@@ -216,6 +217,7 @@ export const thunkFetchTransaction =
       let transactions: Transactions[] = [];
       for (let i = 0; i < signatureArray.length; i++) {
         const transaction = await connection.getTransaction(signatureArray[i]);
+        console.log("TXN", transaction);
         if (!transaction) {
           throw new Error(
             `Transaction is null for signature: ${signatureArray[i]}`
@@ -274,6 +276,63 @@ const fetchTransaction = (payload: Wallets[]) => {
   };
 };
 
+export const thunkCreateMint =
+  (): ThunkAction<void, RootState, unknown, Action<string>> =>
+  async (dispatch, getState) => {
+    try {
+      const { wallets } = getState();
+      const [selectedWallet] = wallets.filter((wallet) => wallet.isSelected);
+
+      const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+      const mint = await Token.createMint(
+        connection,
+        selectedWallet.keypair,
+        selectedWallet.keypair.publicKey,
+        null,
+        100,
+        TOKEN_PROGRAM_ID
+      );
+      console.log("MINT", mint);
+
+      // Get the token account of the fromWallet Solana address, if it does not exist, create it
+      const fromTokenAccount = await mint.getOrCreateAssociatedAccountInfo(
+        selectedWallet.keypair.publicKey
+      );
+      console.log("fromTokenAccount", fromTokenAccount);
+
+      // Minting 1 new token to the "fromTokenAccount" account we just returned/created
+      const result = await mint.mintTo(
+        fromTokenAccount.address,
+        selectedWallet.keypair.publicKey,
+        [],
+        1000000000
+      );
+
+      console.log("MINT TO R", result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+export const thunkFetchTokens =
+  (): ThunkAction<void, RootState, unknown, Action<string>> =>
+  async (dispatch, getState) => {
+    try {
+      const { wallets } = getState();
+      const [selectedWallet] = wallets.filter((wallet) => wallet.isSelected);
+
+      const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+      //   const token = await Token.getAssociatedTokenAddress(selectedWallet.keypair.publicKey)
+      const tokenAccounts = await connection.getProgramAccounts(
+        selectedWallet.keypair.publicKey
+      );
+      console.log("TOKEN ACCOUNTS", tokenAccounts);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 // Local DB functions
 
 async function saveWallet(wallet: lWallet): Promise<string> {
