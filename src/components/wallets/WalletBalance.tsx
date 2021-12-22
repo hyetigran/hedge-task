@@ -1,9 +1,12 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Card, Button, Spin, Modal } from "antd";
 
 import { RootState } from "../../store";
-import { thunkCreateTransaction } from "../../store/actions/walletActions";
+import {
+  thunkCreateTransaction,
+  thunkFetchTransaction,
+} from "../../store/actions/walletActions";
 import ReceiveModal from "./ReceiveModal";
 import SendModal from "./SendModal";
 
@@ -19,6 +22,12 @@ const WalletBalance: FC = () => {
     state.wallets.filter((wallet) => wallet.isSelected)
   );
 
+  useEffect(() => {
+    if (wallet[0]) {
+      dispatch(thunkFetchTransaction(wallet[0].keypair, wallet[0].gid!));
+    }
+  }, [wallet[0]?.gid]);
+
   const dispatch = useDispatch();
 
   const showModal = (type: boolean) => {
@@ -30,11 +39,18 @@ const WalletBalance: FC = () => {
     setIsModalVisible(false);
     if (modalType) {
       dispatch(thunkCreateTransaction(wallet[0].keypair, toAddress, amount));
+      resetSendForm();
     }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
+    resetSendForm();
+  };
+
+  const resetSendForm = () => {
+    setToAddress("");
+    setAmount("");
   };
 
   const addressHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {

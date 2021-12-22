@@ -14,7 +14,7 @@ const App: FC = () => {
     <Router>
       <Layout className="homeContainer">
         <Sider width={300}>
-          <Header className="logoTitle">Hedge Task</Header>
+          <Header className="logoTitle">Hedgehog Task</Header>
           <Menu mode="inline" theme="dark" defaultSelectedKeys={["1"]}>
             <Menu.Item key="1">
               <Link to="/">

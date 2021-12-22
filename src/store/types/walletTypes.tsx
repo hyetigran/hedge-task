@@ -1,16 +1,27 @@
+import { Keypair } from "@solana/web3.js";
+
 export const CREATE_WALLET_SUCCESS = "CREATE_WALLET_SUCCESS";
 export const FETCH_WALLETS_SUCCESS = "FETCH_WALLETS_SUCCESS";
 export const TOGGLE_SELECT_WALLET = "TOGGLE_SELECT_WALLET";
 export const CREATE_AIRDROP_SUCCESS = "CREATE_AIRDROP_SUCCESS";
 export const CREATE_TRANSACTION_SUCCESS = "CREATE_TRANSACTION_SUCCESS";
+export const FETCH_TRANSACTION_SUCCESS = "FETCH_TRANSACTION_SUCCESS";
 
 export interface Wallets {
   gid?: string;
   seed: Uint8Array;
   balance: number;
   walletName: string;
-  keypair: any;
+  keypair: Keypair;
   isSelected: boolean;
+  transactions?: Transactions[];
+}
+
+export interface Transactions {
+  blockTime: number | null | undefined;
+  slot: number;
+  amount: number;
+  fee: number;
 }
 
 interface createWalletAction {
@@ -38,9 +49,15 @@ interface createTransactionAction {
   payload: Wallets[];
 }
 
+interface fetchTransactionAction {
+  type: typeof FETCH_TRANSACTION_SUCCESS;
+  payload: Wallets[];
+}
+
 export type WalletActionTypes =
   | createWalletAction
   | fetchWalletsAction
   | toggleWalletAction
   | createAirdropAction
-  | createTransactionAction;
+  | createTransactionAction
+  | fetchTransactionAction;

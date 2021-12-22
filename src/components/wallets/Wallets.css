@@ -31,3 +31,16 @@
   min-height: 100px;
   flex-direction: column;
 }
+
+.transactionItem {
+  border: 1px solid #eff2f5;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 5% 4%;
+  margin: 5% 0;
+}
+.topTransactionDetail {
+  display: flex;
+  justify-content: space-between;
+}

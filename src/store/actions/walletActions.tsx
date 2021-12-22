@@ -3,6 +3,10 @@ import { Action } from "redux";
 import {
   Keypair,
   Connection,
+  Transaction,
+  sendAndConfirmTransaction,
+  SystemProgram,
+  PublicKey,
   clusterApiUrl,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
@@ -15,7 +19,9 @@ import {
   TOGGLE_SELECT_WALLET,
   CREATE_AIRDROP_SUCCESS,
   CREATE_TRANSACTION_SUCCESS,
+  FETCH_TRANSACTION_SUCCESS,
   Wallets,
+  Transactions,
 } from "../types/walletTypes";
 import { createWallet, readAllWallets } from "../../localDB/utilities";
 import { db, Wallet } from "../../localDB/db";
@@ -153,12 +159,29 @@ export const thunkCreateTransaction =
     amount: string
   ): ThunkAction<void, RootState, unknown, Action<string>> =>
   async (dispatch, getState) => {
+    let connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+    // Create Simple Transaction
+    let transaction = new Transaction();
+
+    // Add an instruction to execute
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: keypair.publicKey,
+        toPubkey: new PublicKey(toAddress),
+        lamports: parseInt(amount) * 100000000,
+      })
+    );
+
+    // Send and confirm transaction
+    const result = await sendAndConfirmTransaction(connection, transaction, [
+      keypair,
+    ]);
+    console.log("result", result);
     try {
     } catch (error) {
       console.log(error);
     }
   };
-// Local DB functions
 
 const createTransaction = (payload: any) => {
   return {
@@ -166,6 +189,83 @@ const createTransaction = (payload: any) => {
     payload,
   };
 };
+
+export const thunkFetchTransaction =
+  (
+    keypair: Keypair,
+    gid: string
+  ): ThunkAction<void, RootState, unknown, Action<string>> =>
+  async (dispatch, getState) => {
+    try {
+      let connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+      const signatures = await connection.getSignaturesForAddress(
+        keypair.publicKey
+      );
+      const signatureArray = signatures.map((sig) => sig.signature);
+
+      let transactions: Transactions[] = [];
+      for (let i = 0; i < signatureArray.length; i++) {
+        const transaction = await connection.getTransaction(signatureArray[i]);
+        if (!transaction) {
+          throw new Error(
+            `Transaction is null for signature: ${signatureArray[i]}`
+          );
+        }
+        if (!transaction.meta) {
+          throw new Error(
+            `Transaction meta is null for signature: ${signatureArray[i]}`
+          );
+        }
+        const accountKeyIndex =
+          transaction.transaction.message.accountKeys.findIndex((key) =>
+            new PublicKey(key).equals(keypair.publicKey)
+          );
+
+        const {
+          blockTime,
+          slot,
+          meta: { fee, postBalances, preBalances },
+        } = transaction;
+        const feePaid = accountKeyIndex === 0 ? fee : 0;
+        const amount =
+          (postBalances[accountKeyIndex] -
+            preBalances[accountKeyIndex] -
+            feePaid) /
+          100000000;
+        let newTransaction = {
+          blockTime,
+          fee,
+          slot,
+          amount,
+        };
+        transactions.push(newTransaction);
+      }
+
+      const { wallets } = getState();
+      const updatedWallets = wallets.map((wallet) => {
+        if (wallet.gid === gid) {
+          return {
+            ...wallet,
+            transactions,
+          };
+        }
+        return wallet;
+      });
+      dispatch(fetchTransaction(updatedWallets));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+const fetchTransaction = (payload: Wallets[]) => {
+  return {
+    type: FETCH_TRANSACTION_SUCCESS,
+    payload,
+  };
+};
+
+// Local DB functions
 
 async function saveWallet(wallet: lWallet): Promise<string> {
   return await db.transaction("rw", db.wallets, async (): Promise<string> => {

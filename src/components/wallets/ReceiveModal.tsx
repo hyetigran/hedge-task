@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { useDispatch } from "react-redux";
 
 interface ActionProps {
-  publicKey: Uint8Array;
+  publicKey: string;
 }
 
 const ReceiveModal: FC<ActionProps> = ({ publicKey }) => {
