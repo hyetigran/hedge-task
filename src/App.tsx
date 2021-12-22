@@ -14,7 +14,7 @@ const App: FC = () => {
   let pathname = useQuery();
 
   const selectedKey = pathname === "/" ? "1" : "2";
-  console.log("sk", selectedKey);
+
   return (
     <>
       <Layout className="homeContainer">
