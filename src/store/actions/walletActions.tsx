@@ -403,26 +403,21 @@ export const thunkFetchTokens =
       const { wallets } = getState();
       const [selectedWallet] = wallets.filter((wallet) => wallet.isSelected);
       const savedMints = await getSavedMints(selectedWallet.gid!);
-
+      console.log("S M", savedMints);
       const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
-      //   const tokenList = [];
-      //   for (let i = 0; i < savedMints.length; i++) {
-      //     const token = await Token.getAssociatedTokenAddress(
-      //       selectedWallet.keypair.publicKey,
-      //       selectedWallet.keypair.publicKey,
-      //       new PublicKey(savedMints[i].mint),
-      //       new PublicKey(savedMints[i].owner)
-      //     );
-      //     tokenList.push(token);
-      //     console.log("TOKEN", token);
-      //   }
-      const tokenSupply = await connection.getTokenSupply(
-        new PublicKey(savedMints[0].mint)
-      );
-
-      const tokenAccounts = await connection.getProgramAccounts(
-        selectedWallet.keypair.publicKey
-      );
+      const tokenList = [];
+      for (let i = 0; i < savedMints.length; i++) {
+        const token = await connection.getTokenAccountsByOwner(
+          selectedWallet.keypair.publicKey,
+          { mint: new PublicKey(savedMints[i].mint) }
+        );
+        if (
+          selectedWallet.keypair.publicKey.equals(token.value[0].account.owner)
+        ) {
+          tokenList.push(token);
+          console.log("TOKEN", token);
+        }
+      }
     } catch (error) {
       console.log(error);
     }

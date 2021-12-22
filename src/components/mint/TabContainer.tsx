@@ -20,6 +20,9 @@ const TabContainer: FC = () => {
     await dispatch(thunkCreateAndSendMint(toAddress));
     setLoading(false);
   };
+  // const handleFetchTokens = () => {
+  //   dispatch(thunkFetchTokens());
+  // };
 
   const addressHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
     // NO INPUT VALIDATION
@@ -51,19 +54,12 @@ const TabContainer: FC = () => {
             </Button>
           </TabPane>
           {/* <TabPane
-            tab="Send Tokens"
-            key="3"
+            tab="View Tokens"
+            key="2"
             style={{ background: "white", padding: "10%" }}
           >
-            <Input
-              placeholder="Send to address"
-              value={toAddress}
-              onChange={addressHandler}
-              style={{ margin: "10px 0" }}
-            />
-
-            <Button onClick={handleSendToken} type="primary" block>
-              Send
+            <Button onClick={handleFetchTokens} type="primary" block>
+              Fetch Tokens
             </Button>
           </TabPane> */}
         </Tabs>
@@ -73,6 +69,3 @@ const TabContainer: FC = () => {
 };
 
 export default TabContainer;
-function useHistory() {
-  throw new Error("Function not implemented.");
-}
