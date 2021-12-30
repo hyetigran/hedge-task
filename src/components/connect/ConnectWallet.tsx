@@ -23,7 +23,13 @@ import { Navigation } from "./Navigation";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 interface ActionProps {
-  setConnectWallet: (pk: PublicKey) => void;
+  setConnectWallet: ({
+    publicKey,
+    wallet,
+  }: {
+    publicKey: PublicKey;
+    wallet: WalletType;
+  }) => void;
 }
 
 export const Wallet: FC<ActionProps> = ({ setConnectWallet }) => {

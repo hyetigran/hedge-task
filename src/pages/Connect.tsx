@@ -1,22 +1,26 @@
 import { useEffect, useState } from "react";
-import { Wallet } from "@solana/wallet-adapter-base";
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 
 import { Wallet as ConnectWallet } from "../components/connect/ConnectWallet";
 import ConnectHistory from "../components/connect/ConnectHistory";
 import { Transactions } from "../store/types/walletTypes";
+import { Wallet } from "@solana/wallet-adapter-base";
 
 const Connect = () => {
-  const [connectWallet, setConnectWallet] = useState<PublicKey>();
+  const [connectWallet, setConnectWallet] =
+    useState<{ publicKey: PublicKey; wallet: Wallet }>();
   const [transactions, setTransactions] = useState<Transactions[]>([]);
-
-  const handleConnectWalletData = (publicKey: PublicKey) => {
-    setConnectWallet(publicKey);
+  const handleConnectWalletData = (payload: {
+    publicKey: PublicKey;
+    wallet: Wallet;
+  }) => {
+    setConnectWallet(payload);
   };
   //   console.log("conn", connectWallet);
   useEffect(() => {
     if (connectWallet) {
-      fetchTransactions(connectWallet);
+      fetchTransactions(connectWallet.publicKey);
+      fetchTokensforAccount(connectWallet.publicKey);
     } else if (!connectWallet) {
       setTransactions([]);
     }
@@ -32,7 +36,7 @@ const Connect = () => {
       let transactions = [];
       for (let i = 0; i < signatureArray.length; i++) {
         const transaction = await connection.getTransaction(signatureArray[i]);
-        // console.log("TXN", transaction);
+        console.log("TXN", transaction);
         if (!transaction) {
           throw new Error(
             `Transaction is null for signature: ${signatureArray[i]}`
@@ -73,6 +77,16 @@ const Connect = () => {
       console.log(error);
     }
   };
+
+  const fetchTokensforAccount = async (pulicKey: PublicKey) => {
+    try {
+      let connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+      const result = await connection.getProgramAccounts(pulicKey);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <ConnectWallet setConnectWallet={handleConnectWalletData} />

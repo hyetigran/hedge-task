@@ -1,3 +1,4 @@
+import { Wallet } from "@solana/wallet-adapter-base";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
   WalletDisconnectButton,
@@ -7,15 +8,22 @@ import { PublicKey } from "@solana/web3.js";
 import { FC, useEffect } from "react";
 
 interface ActionProps {
-  setConnectWallet: (pk: PublicKey) => void;
+  setConnectWallet: ({
+    publicKey,
+    wallet,
+  }: {
+    publicKey: PublicKey;
+    wallet: Wallet;
+  }) => void;
 }
 
 export const Navigation: FC<ActionProps> = ({ setConnectWallet }) => {
-  const { publicKey } = useWallet();
+  const { publicKey, wallet } = useWallet();
+  console.log("w", wallet);
 
   useEffect(() => {
-    if (publicKey) {
-      setConnectWallet(publicKey);
+    if (publicKey && wallet) {
+      setConnectWallet({ publicKey, wallet });
     }
   }, [publicKey]);
 
