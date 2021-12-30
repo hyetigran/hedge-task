@@ -1,15 +1,14 @@
 import { FC } from "react";
-import { useSelector } from "react-redux";
 import { Card, Spin } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
-import "./Wallets.css";
-import { RootState } from "../../store";
-import TransactionItem from "./TransactionItem";
+import "../wallets/Wallets.css";
+import TransactionItem from "../wallets/TransactionItem";
 
-const TransactionHistory: FC = () => {
-  const [wallet] = useSelector((state: RootState) =>
-    state.wallets.filter((wallet) => wallet.isSelected)
-  );
+interface ActionProps {
+  transactions: any;
+}
+
+const ConnectHistory: FC<ActionProps> = ({ transactions }) => {
   return (
     <Card
       title="Latest Transactions"
@@ -19,16 +18,16 @@ const TransactionHistory: FC = () => {
         </div>
       }
       className="cardContainer"
-      style={{ minHeight: "100%", maxHeight: "650px", width: "400px" }}
+      style={{ minHeight: "50%", maxHeight: "450px", width: "400px" }}
       bodyStyle={{
         overflow: "auto",
         maxHeight: "inherit",
         minHeight: "inherit",
       }}
     >
-      {wallet && wallet.transactions ? (
-        wallet.transactions.length ? (
-          wallet.transactions?.map((txn) => (
+      {transactions ? (
+        transactions.length ? (
+          transactions?.map((txn: any) => (
             <TransactionItem key={txn.blockTime} transaction={txn} />
           ))
         ) : (
@@ -41,4 +40,4 @@ const TransactionHistory: FC = () => {
   );
 };
 
-export default TransactionHistory;
+export default ConnectHistory;

@@ -22,11 +22,12 @@ const WalletBalance: FC = () => {
     state.wallets.filter((wallet) => wallet.isSelected)
   );
 
+  const selectedWalletBalance = wallet[0]?.balance;
   useEffect(() => {
     if (wallet[0]) {
       dispatch(thunkFetchTransaction(wallet[0].keypair, wallet[0].gid!));
     }
-  }, [wallet[0]?.balance]);
+  }, [selectedWalletBalance]);
 
   const dispatch = useDispatch();
 

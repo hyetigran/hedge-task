@@ -14,7 +14,6 @@ import WalletItem from "./WalletItem";
 const WalletList: FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [walletName, setWalletName] = useState("");
-
   const wallets = useSelector((state: RootState) => state.wallets);
 
   const dispatch = useDispatch();

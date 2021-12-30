@@ -248,6 +248,7 @@ export const thunkFetchTransaction =
       let transactions: Transactions[] = [];
       for (let i = 0; i < signatureArray.length; i++) {
         const transaction = await connection.getTransaction(signatureArray[i]);
+        // console.log("TXN", transaction);
         if (!transaction) {
           throw new Error(
             `Transaction is null for signature: ${signatureArray[i]}`

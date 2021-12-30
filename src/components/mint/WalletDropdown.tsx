@@ -1,5 +1,5 @@
-import React, { FC, useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FC } from "react";
+import { useDispatch } from "react-redux";
 import { Dropdown, Button, Menu, Row, Col } from "antd";
 import { DownOutlined, WalletOutlined } from "@ant-design/icons";
 import { MenuClickEventHandler } from "rc-menu/lib/interface";

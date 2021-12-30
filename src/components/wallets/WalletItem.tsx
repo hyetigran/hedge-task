@@ -1,5 +1,5 @@
-import React, { FC, useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FC } from "react";
+import { useDispatch } from "react-redux";
 import { Tooltip } from "antd";
 import { CloudDownloadOutlined } from "@ant-design/icons";
 import {
