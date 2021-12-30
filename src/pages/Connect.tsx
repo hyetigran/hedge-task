@@ -16,11 +16,8 @@ const Connect = () => {
   //   console.log("conn", connectWallet);
   useEffect(() => {
     if (connectWallet) {
-      console.log("ue if");
       fetchTransactions(connectWallet);
     } else if (!connectWallet) {
-      console.log("ue if else");
-
       setTransactions([]);
     }
   }, [connectWallet]);
